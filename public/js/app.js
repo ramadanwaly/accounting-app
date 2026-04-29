@@ -4,9 +4,48 @@
 let currentEditId = null;
 let currentEditType = null;
 
+// ===== إدارة السمة (الوضوء/الظلام) =====
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    // إذا كان هناك سمة محفوظة، استخدمها؛ وإلا استخدم تفضيل النظام
+    const themeToApply = savedTheme || (prefersDark ? 'dark' : 'light');
+    applyTheme(themeToApply);
+    updateThemeIcon(themeToApply);
+}
+
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+    }
+    localStorage.setItem('theme', theme);
+}
+
+function toggleTheme() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const newTheme = isDark ? 'light' : 'dark';
+    applyTheme(newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (toggleBtn) {
+        // شمس للوضوء (للتحول للظلام)، قمر للظلام (للتحول للوضوء)
+        toggleBtn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    initializeTheme();
     setupEventListeners();
     setupKeyboardShortcuts();
+
+    // إضافة مستمع لزر التبديل
+    document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 });
 
 function setupEventListeners() {
