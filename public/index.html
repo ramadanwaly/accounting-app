@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامج المحاسبة الاحترافي</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- صفحة تسجيل الدخول -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="logo-icon">💼</div>
+                <h1 class="login-title">برنامج المحاسبة</h1>
+                <p class="login-subtitle">نظام احترافي لإدارة المالية</p>
+            </div>
+
+            <!-- تبويبات تسجيل الدخول/إنشاء حساب -->
+            <div class="login-tabs">
+                <button class="login-tab active" data-tab="login">تسجيل الدخول</button>
+                <button class="login-tab" data-tab="register">إنشاء حساب</button>
+            </div>
+
+            <!-- نموذج تسجيل الدخول -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginEmail">البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" placeholder="example@domain.com" autocomplete="on" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">كلمة المرور</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                        <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">دخول</button>
+                <p class="forgot-password-link">
+                    <a href="#" id="forgotPasswordLink">نسيت كلمة المرور؟</a>
+                </p>
+            </form>
+
+            <!-- نموذج إنشاء حساب -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerName">الاسم الكامل (اختياري)</label>
+                    <input type="text" id="registerName" placeholder="اسمك الكامل">
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">البريد الإلكتروني</label>
+                    <input type="email" id="registerEmail" placeholder="example@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">كلمة المرور</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="registerPassword" placeholder="6 أحرف على الأقل" required>
+                        <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="registerPasswordConfirm">تأكيد كلمة المرور</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="registerPasswordConfirm" placeholder="أعد إدخال كلمة المرور" required>
+                        <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">إنشاء حساب</button>
+            </form>
+
+            <!-- نموذج نسيت كلمة المرور -->
+            <form id="forgotPasswordForm" class="auth-form">
+                <p class="form-description">أدخل بريدك الإلكتروني لإرسال رمز إعادة تعيين كلمة المرور</p>
+                <div class="form-group">
+                    <label for="forgotEmail">البريد الإلكتروني</label>
+                    <input type="email" id="forgotEmail" placeholder="example@domain.com" required>
+                </div>
+                <div class="form-group" id="resetCodeGroup" style="display: none;">
+                    <label for="resetCode">رمز التحقق</label>
+                    <input type="text" id="resetCode" placeholder="أدخل الرمز المرسل">
+                </div>
+                <div class="form-group" id="newPasswordGroup" style="display: none;">
+                    <label for="newResetPassword">كلمة المرور الجديدة</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="newResetPassword" placeholder="6 أحرف على الأقل">
+                        <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group" id="confirmNewPasswordGroup" style="display: none;">
+                    <label for="confirmResetPassword">تأكيد كلمة المرور الجديدة</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirmResetPassword" placeholder="أعد إدخال كلمة المرور">
+                        <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="forgotPasswordBtn">إرسال رمز التحقق</button>
+                <p class="back-to-login">
+                    <a href="#" id="backToLoginLink">العودة لتسجيل الدخول</a>
+                </p>
+            </form>
+
+            <div class="alert" id="loginAlert"></div>
+        </div>
+    </div>
+
+    <!-- التطبيق الرئيسي -->
+    <div class="main-app" id="mainApp" style="display: none;">
+        <!-- الهيدر -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">💼</div>
+                    <div class="header-info">
+                        <h1 class="app-title">برنامج المحاسبة</h1>
+                        <p class="user-info" id="userInfo">مرحباً</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-logout" id="logoutBtn">
+                        🚪 تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- التنقل -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-page="revenues">
+                📈 الإيرادات
+            </button>
+            <button class="nav-tab" data-page="expenses">
+                📉 المصروفات
+            </button>
+            <button class="nav-tab" data-page="summary">
+                📊 الملخص المالي
+            </button>
+            <button class="nav-tab" data-page="projects">
+                📁 تقرير المشاريع
+            </button>
+            <button class="nav-tab" data-page="admin" id="adminTab" style="display: none;">
+                🛡️ لوحة التحكم
+            </button>
+        </nav>
+
+        <!-- المحتوى -->
+        <div class="container">
+            <!-- رسالة التنبيه العامة -->
+            <div class="alert" id="appAlert"></div>
+
+            <!-- صفحة الإيرادات -->
+            <div id="revenuesPage" class="page active">
+                <div class="page-header">
+                    <h2>📈 إدارة الإيرادات</h2>
+                    <div class="actions">
+                        <button class="btn btn-danger" id="deleteAllRevenuesBtn">حذف الكل</button>
+                        <button class="btn btn-secondary" id="addBulkRevenueBtn">📋 إضافة متعددة</button>
+                        <button class="btn btn-primary" id="addRevenueBtn">+ إضافة إيراد</button>
+                    </div>
+                </div>
+                <div id="revenuesContent">
+                    <div class="table-card">
+                        <div class="table-container">
+                            <table id="revenuesTable">
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>المصدر</th>
+                                        <th>المبلغ</th>
+                                        <th>الملاحظات</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revenuesTableBody">
+                                    <tr>
+                                        <td colspan="5" class="loading">جاري التحميل...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة المصروفات -->
+            <div id="expensesPage" class="page">
+                <div class="page-header">
+                    <h2>📉 إدارة المصروفات</h2>
+                    <div class="actions">
+                        <button class="btn btn-danger" id="deleteAllExpensesBtn">حذف الكل</button>
+                        <button class="btn btn-secondary" id="addBulkExpenseBtn">📋 إضافة متعددة</button>
+                        <button class="btn btn-primary" id="addExpenseBtn">+ إضافة مصروف</button>
+                    </div>
+                </div>
+                <div id="expensesContent">
+                    <div class="table-card">
+                        <div class="table-container">
+                            <table id="expensesTable">
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>النوع</th>
+                                        <th>الكمية</th>
+                                        <th>السعر</th>
+                                        <th>الإجمالي</th>
+                                        <th>ملاحظات</th>
+                                        <th>المشروع</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTableBody">
+                                    <tr>
+                                        <td colspan="6" class="loading">جاري التحميل...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة الملخص المالي -->
+            <div id="summaryPage" class="page">
+                <h2 class="page-title">📊 الملخص المالي</h2>
+                
+                <!-- البطاقات السريعة -->
+                <div class="quick-stats-grid">
+                    <div class="quick-stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-info">
+                            <h4>أعلى مصدر دخل</h4>
+                            <p id="topRevenueSource">-</p>
+                        </div>
+                    </div>
+                    <div class="quick-stat-card">
+                        <div class="stat-icon">🏗️</div>
+                        <div class="stat-info">
+                            <h4>المشروع الأكثر تكلفة</h4>
+                            <p id="topExpenseProject">-</p>
+                        </div>
+                    </div>
+                    <div class="quick-stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <h4>أداء هذا الشهر</h4>
+                            <p id="currentMonthStatus">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-card revenue">
+                        <div class="summary-icon">📈</div>
+                        <div class="summary-content">
+                            <h3>إجمالي الإيرادات</h3>
+                            <div class="summary-value" id="totalRevenues">0.00</div>
+                        </div>
+                    </div>
+                    <div class="summary-card expense">
+                        <div class="summary-icon">📉</div>
+                        <div class="summary-content">
+                            <h3>إجمالي المصروفات</h3>
+                            <div class="summary-value" id="totalExpenses">0.00</div>
+                        </div>
+                    </div>
+                    <div class="summary-card profit">
+                        <div class="summary-icon">💰</div>
+                        <div class="summary-content">
+                            <h3>صافي الربح</h3>
+                            <div class="summary-value" id="netProfit">0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- حاويات الرسوم البيانية -->
+                <div class="charts-grid">
+                    <div class="chart-container-card">
+                        <h3>📉 توزيع المصروفات حسب النوع</h3>
+                        <canvas id="expensesPieChart"></canvas>
+                    </div>
+                    <div class="chart-container-card">
+                        <h3>📊 حركة الأرباح والخسائر (سنوي)</h3>
+                        <canvas id="profitLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة تقرير المشاريع -->
+            <div id="projectsPage" class="page">
+                <h2 class="page-title">📁 تقرير المشاريع</h2>
+                <div id="projectsContent">
+                    <p class="loading">جاري تحميل التقرير...</p>
+                </div>
+            </div>
+
+            <!-- صفحة لوحة التحكم -->
+            <div id="adminPage" class="page">
+                <h2 class="page-title">🛡️ لوحة التحكم</h2>
+
+                <!-- إدارة المستخدمين -->
+                <div class="admin-section">
+                    <h3>👥 إدارة المستخدمين</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button class="btn btn-primary" id="addUserBtn">➕ إضافة مستخدم</button>
+                        <button class="btn btn-secondary" id="refreshUsersBtn">🔄 تحديث القائمة</button>
+                    </div>
+                    <div class="table-card">
+                        <div class="table-container">
+                            <table id="adminUsersTable">
+                                <thead>
+                                    <tr>
+                                        <th>الاسم</th>
+                                        <th>البريد الإلكتروني</th>
+                                        <th>تاريخ التسجيل</th>
+                                        <th>الحالة</th>
+                                        <th>الصلاحية</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminUsersTableBody">
+                                    <tr>
+                                        <td colspan="6" class="loading">جاري التحميل...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الإعدادات -->
+                <div class="admin-section" style="margin-top: 30px;">
+                    <h3>⚙️ الإعدادات</h3>
+                    <div class="settings-content">
+                        <h4>🔑 تغيير كلمة المرور</h4>
+                        <form id="adminChangePasswordForm">
+                            <div class="form-group">
+                                <label for="adminCurrentPassword">كلمة المرور الحالية</label>
+                                <div class="password-wrapper">
+                                    <input type="password" id="adminCurrentPassword" required>
+                                    <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="adminNewPassword">كلمة المرور الجديدة</label>
+                                <div class="password-wrapper">
+                                    <input type="password" id="adminNewPassword" required>
+                                    <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                                </div>
+                            </div>
+                            <div class="form-group" id="adminVerificationCodeGroup" style="display: none;">
+                                <label for="adminVerificationCode">كود التحقق</label>
+                                <input type="text" id="adminVerificationCode" placeholder="أدخل الكود المرسل للإيميل">
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="adminChangePasswordBtn">طلب رمز
+                                التحقق</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: الإعدادات -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ الإعدادات</h3>
+                <button class="modal-close" data-modal="settingsModal">&times;</button>
+            </div>
+            <div class="settings-content">
+                <h4>🔑 تغيير كلمة المرور</h4>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">كلمة المرور الحالية</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="currentPassword" required>
+                            <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">كلمة المرور الجديدة</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="newPassword" required>
+                            <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                        </div>
+                    </div>
+                    <div class="form-group" id="verificationCodeGroup" style="display: none;">
+                        <label for="verificationCode">كود التحقق</label>
+                        <input type="text" id="verificationCode" placeholder="أدخل الكود المرسل للإيميل">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="changePasswordBtn">طلب رمز التحقق</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: التحقق الأمني -->
+    <div class="modal" id="verificationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 تحقق أمني</h3>
+                <button class="modal-close" data-modal="verificationModal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <p style="margin-bottom: 15px;">هذا الإجراء يتطلب التحقق. انقر أدناه لإرسال رمز التحقق إلى بريدك
+                    الإلكتروني.</p>
+                <div class="form-group" id="genericVerificationCodeGroup" style="display: none;">
+                    <label>كود التحقق</label>
+                    <input type="text" id="genericVerificationCode" placeholder="أدخل الكود المكون من 6 أرقام">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="genericVerifyBtn">إرسال رمز التحقق</button>
+                    <button class="btn btn-secondary modal-cancel" data-modal="verificationModal">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: إضافة/تعديل إيراد -->
+    <div class="modal" id="revenueModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="revenueModalTitle">إضافة إيراد جديد</h3>
+                <button class="modal-close" data-modal="revenueModal">&times;</button>
+            </div>
+            <form id="revenueForm">
+                <div class="form-group">
+                    <label for="revenueDate">التاريخ *</label>
+                    <input type="date" id="revenueDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="revenueSource">مصدر الإيراد *</label>
+                    <input type="text" id="revenueSource" placeholder="مثال: بيع منتجات" required>
+                </div>
+                <div class="form-group">
+                    <label for="revenueAmount">المبلغ *</label>
+                    <input type="number" id="revenueAmount" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="revenueNotes">ملاحظات</label>
+                    <textarea id="revenueNotes" rows="3" placeholder="ملاحظات إضافية..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                    <button type="button" class="btn btn-secondary modal-cancel"
+                        data-modal="revenueModal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: إضافة/تعديل مصروف -->
+    <div class="modal" id="expenseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="expenseModalTitle">إضافة مصروف جديد</h3>
+                <button class="modal-close" data-modal="expenseModal">&times;</button>
+            </div>
+            <form id="expenseForm">
+                <div class="form-group">
+                    <label for="expenseDate">التاريخ *</label>
+                    <input type="date" id="expenseDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="expenseCategory">نوع المصروف *</label>
+                    <select id="expenseCategory" required>
+                        <option value="">اختر نوع المصروف</option>
+                        <option value="خامات">خامات</option>
+                        <option value="إكسسوارات">إكسسوارات</option>
+                        <option value="نقل">نقل</option>
+                        <option value="صيانة">صيانة</option>
+                        <option value="كهرباء">كهرباء</option>
+                        <option value="حساب قشرة">حساب قشرة</option>
+                        <option value="دهانات">دهانات</option>
+                        <option value="حساب مكنة">حساب مكنة</option>
+                        <option value="حساب صانيعية">حساب صانيعية</option>
+                        <option value="رسوم تحويل">رسوم تحويل</option>
+                        <option value="إيجار">إيجار</option>
+                        <option value="مصاريف عمومية">مصاريف عمومية</option>
+                        <option value="زجاج">زجاج</option>
+                        <option value="سلفة">سلفة</option>
+                        <option value="تنجيد">تنجيد</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expenseProject">المشروع *</label>
+                    <input type="text" id="expenseProject" placeholder="اسم المشروع" required list="projectsList"
+                        autocomplete="off">
+                    <datalist id="projectsList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label for="expenseQuantity">الكمية</label>
+                    <input type="number" id="expenseQuantity" step="0.01" min="0.01" value="1" placeholder="1">
+                </div>
+                <div class="form-group">
+                    <label for="expensePrice">السعر (للوحدة)</label>
+                    <input type="number" id="expensePrice" step="0.01" min="0" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="expenseAmount">الإجمالي *</label>
+                    <input type="number" id="expenseAmount" step="0.01" min="0.01" placeholder="0.00" readonly
+                        style="background-color: #eee;">
+                </div>
+                <div class="form-group">
+                    <label for="expenseNotes">ملاحظات</label>
+                    <textarea id="expenseNotes" rows="3" placeholder="ملاحظات إضافية..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                    <button type="button" class="btn btn-secondary modal-cancel"
+                        data-modal="expenseModal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: إضافة إيرادات متعددة -->
+    <div class="modal" id="bulkRevenueModal">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3>📋 إضافة إيرادات متعددة</h3>
+                <button class="modal-close" data-modal="bulkRevenueModal">&times;</button>
+            </div>
+            <form id="bulkRevenueForm">
+                <div class="bulk-shared-fields">
+                    <div class="form-group">
+                        <label for="bulkRevenueDate">التاريخ المشترك *</label>
+                        <input type="date" id="bulkRevenueDate" required>
+                    </div>
+                </div>
+                <div class="bulk-table-container">
+                    <table class="bulk-table">
+                        <thead>
+                            <tr>
+                                <th>المصدر *</th>
+                                <th>المبلغ *</th>
+                                <th>ملاحظات</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulkRevenueRows">
+                            <!-- سيتم إضافة الصفوف ديناميكياً -->
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn btn-add-row" id="addBulkRevenueRow">+ إضافة صف جديد</button>
+                <div class="bulk-summary">
+                    <span>إجمالي: <strong id="bulkRevenueTotalDisplay">0.00</strong></span>
+                    <span>عدد الصفوف: <strong id="bulkRevenueCountDisplay">0</strong></span>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">حفظ الكل</button>
+                    <button type="button" class="btn btn-secondary modal-cancel"
+                        data-modal="bulkRevenueModal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: إضافة مصروفات متعددة -->
+    <div class="modal" id="bulkExpenseModal">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3>📋 إضافة مصروفات متعددة</h3>
+                <button class="modal-close" data-modal="bulkExpenseModal">&times;</button>
+            </div>
+            <form id="bulkExpenseForm">
+                <div class="bulk-shared-fields">
+                    <div class="form-group" style="display:inline-block; width:48%; margin-left:2%;">
+                        <label for="bulkExpenseDate">التاريخ المشترك *</label>
+                        <input type="date" id="bulkExpenseDate" required>
+                    </div>
+                    <div class="form-group" style="display:inline-block; width:48%;">
+                        <label for="bulkExpenseProject">المشروع المشترك *</label>
+                        <input type="text" id="bulkExpenseProject" placeholder="اسم المشروع" required list="projectsList" autocomplete="off">
+                    </div>
+                </div>
+                <div class="bulk-table-container">
+                    <table class="bulk-table">
+                        <thead>
+                            <tr>
+                                <th>نوع المصروف *</th>
+                                <th>الكمية</th>
+                                <th>السعر</th>
+                                <th>الإجمالي</th>
+                                <th>ملاحظات</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulkExpenseRows">
+                            <!-- سيتم إضافة الصفوف ديناميكياً -->
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn btn-add-row" id="addBulkExpenseRow">+ إضافة صف جديد</button>
+                <div class="bulk-summary">
+                    <span>إجمالي: <strong id="bulkExpenseTotalDisplay">0.00</strong></span>
+                    <span>عدد الصفوف: <strong id="bulkExpenseCountDisplay">0</strong></span>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">حفظ الكل</button>
+                    <button type="button" class="btn btn-secondary modal-cancel"
+                        data-modal="bulkExpenseModal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: إضافة مستخدم -->
+    <div class="modal" id="createUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ إضافة مستخدم جديد</h3>
+                <button class="modal-close" data-modal="createUserModal">&times;</button>
+            </div>
+            <form id="createUserForm">
+                <div class="form-group">
+                    <label for="newUserEmail">البريد الإلكتروني *</label>
+                    <input type="email" id="newUserEmail" placeholder="user@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="newUserName">الاسم الكامل</label>
+                    <input type="text" id="newUserName" placeholder="اسم المستخدم">
+                </div>
+                <div class="form-group">
+                    <label for="newUserPassword">كلمة المرور *</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="newUserPassword" placeholder="6 أحرف على الأقل" required>
+                        <button type="button" class="toggle-password" aria-label="عرض كلمة المرور">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="newUserRole">الصلاحية *</label>
+                    <select id="newUserRole" required>
+                        <option value="user">مستخدم عادي</option>
+                        <option value="admin">مدير</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="newUserApproved" checked>
+                        الموافقة على الحساب مباشرة
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">إنشاء المستخدم</button>
+                    <button type="button" class="btn btn-secondary modal-cancel"
+                        data-modal="createUserModal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- التحميل الشامل -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- السكريبتات (الترتيب مهم: الثوابت والأدوات أولاً، ثم المكونات، ثم الملف الرئيسي) -->
+    <script src="/js/constants.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/revenues.js"></script>
+    <script src="/js/expenses.js"></script>
+    <script src="/js/summary.js"></script>
+    <script src="/js/projects.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/app-admin.js"></script>
+</body>
+
+</html>
+```

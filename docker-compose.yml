@@ -1,0 +1,37 @@
+services:
+  accounting-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: accounting-app
+    # تم إزالة قسم ports هنا لمنع أي وصول مباشر من الإنترنت عبر IP السيرفر
+    # تم تبديله بـ expose لجعل المنفذ متاحاً فقط للحاويات الأخرى (مثل Tunnel)
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    env_file:
+      - .env
+    volumes:
+      - ./database:/app/database
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - accounting-app
+

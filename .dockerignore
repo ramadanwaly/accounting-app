@@ -1,0 +1,45 @@
+# Dependencies
+node_modules
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+
+# Logs
+*.log
+logs/
+
+# Build & Output
+build/
+dist/
+coverage/
+
+# Tests
+tests/
+jest.config.js
+
+# Backups & Database backups
+backups/
+
+# Environment
+.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Electron (not needed for server)
+electron-main.js
+
+# Scripts not needed in container
+deploy.sh
+get-docker.sh
+install.log
+
+# IDE
+.vscode/
+.idea/
+.gemini/
