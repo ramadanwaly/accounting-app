@@ -1,6 +1,7 @@
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const jwt = require('jsonwebtoken');
 
 const setupSecurity = (app) => {
     // Helmet: حماية الهيدرز
@@ -59,6 +60,20 @@ const setupSecurity = (app) => {
     const limiter = rateLimit({
         windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 دقيقة
         max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+        skip: (req) => {
+            // استثناء المديرين من القيود لضمان سلاسة العمل لمالك المشروع
+            const authHeader = req.headers['authorization'];
+            const token = authHeader && authHeader.split(' ')[1];
+            if (token) {
+                try {
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                    return decoded && decoded.role === 'admin';
+                } catch (err) {
+                    return false;
+                }
+            }
+            return false;
+        },
         message: {
             success: false,
             message: 'تم تجاوز عدد الطلبات المسموح به، يرجى المحاولة لاحقاً'
