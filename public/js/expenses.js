@@ -1,13 +1,19 @@
 // ===== إدارة المصروفات =====
 
+let currentExpenseSearch = {};
+
 async function loadExpenses() {
     const container = document.getElementById('expensesContent');
     container.innerHTML = '<p class="loading">جاري التحميل...</p>';
     try {
-        const response = await expensesAPI.getAll();
+        const response = await expensesAPI.getAll(currentExpenseSearch);
         const expenses = response.data;
+        const totalCount = response.pagination ? response.pagination.total : expenses.length;
+        updateSearchResultsInfo('expenseResultsInfo', totalCount, currentExpenseSearch.search);
+
         if (expenses.length === 0) { container.innerHTML = '<p style="text-align:center; padding:30px;">لا توجد مصروفات مسجلة</p>'; return; }
         const monthlyGroups = groupExpensesByMonth(expenses);
+        const searchTerm = currentExpenseSearch.search || '';
         container.innerHTML = Object.entries(monthlyGroups).sort((a, b) => new Date(b[1].date) - new Date(a[1].date)).map(([key, group]) => `
             <div class="project-card">
                 <div class="project-header" style="cursor: pointer;">
@@ -20,7 +26,7 @@ async function loadExpenses() {
                 <div class="project-details" style="display: none;">
                     <div class="table-container">
                         <table><thead><tr><th>التاريخ</th><th>النوع</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>ملاحظات</th><th>المشروع</th><th>الإجراءات</th></tr></thead>
-                            <tbody>${group.expenses.map(exp => `<tr><td>${formatDate(exp.date)}</td><td>${escapeHtml(exp.category)}</td><td>${exp.quantity || 1}</td><td>${formatCurrency(exp.price || exp.amount)}</td><td>${formatCurrency(exp.amount)}</td><td>${escapeHtml(exp.notes || '-')}</td><td>${escapeHtml(exp.project)}</td><td><button class="btn btn-icon edit-btn" data-id="${exp.id}" title="تعديل">✏️</button><button class="btn btn-icon btn-danger delete-btn" data-id="${exp.id}" title="حذف">🗑️</button></td></tr>`).join('')}</tbody>
+                            <tbody>${group.expenses.map(exp => `<tr><td>${formatDate(exp.date)}</td><td>${highlightText(exp.category, searchTerm)}</td><td>${exp.quantity || 1}</td><td>${formatCurrency(exp.price || exp.amount)}</td><td>${formatCurrency(exp.amount)}</td><td>${highlightText(exp.notes || '-', searchTerm)}</td><td>${escapeHtml(exp.project)}</td><td><button class="btn btn-icon edit-btn" data-id="${exp.id}" title="تعديل">✏️</button><button class="btn btn-icon btn-danger delete-btn" data-id="${exp.id}" title="حذف">🗑️</button></td></tr>`).join('')}</tbody>
                         </table>
                     </div>
                 </div>
@@ -31,6 +37,72 @@ async function loadExpenses() {
         container.innerHTML = '<p style="text-align:center; padding:30px; color:var(--danger-color);">خطأ في تحميل البيانات</p>';
         showAlert('فشل في تحميل المصروفات', 'error');
     }
+}
+
+function setupExpenseSearch() {
+    const searchBtn = document.getElementById('expenseSearchBtn');
+    const clearBtn = document.getElementById('expenseClearBtn');
+    const keywordInput = document.getElementById('expenseSearchKeyword');
+    const startDateInput = document.getElementById('expenseSearchStartDate');
+    const endDateInput = document.getElementById('expenseSearchEndDate');
+
+    if (searchBtn) {
+        searchBtn.addEventListener('click', performExpenseSearch);
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearExpenseSearch);
+    }
+
+    if (keywordInput) {
+        keywordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performExpenseSearch();
+        });
+    }
+}
+
+async function performExpenseSearch() {
+    const keyword = document.getElementById('expenseSearchKeyword')?.value.trim() || '';
+    const startDateStr = document.getElementById('expenseSearchStartDate')?.value.trim() || '';
+    const endDateStr = document.getElementById('expenseSearchEndDate')?.value.trim() || '';
+
+    if (keyword && keyword.length < 2) {
+        showAlert('كلمة البحث يجب أن تكون حرفين على الأقل', 'error');
+        return;
+    }
+
+    const searchParams = {};
+    if (keyword) searchParams.search = keyword;
+
+    if (startDateStr) {
+        const parsedStart = parseDateInput(startDateStr);
+        if (!parsedStart) {
+            showAlert('تنسيق تاريخ البداية غير صحيح. استخدم YYYY-MM-DD أو DD/MM/YYYY', 'error');
+            return;
+        }
+        searchParams.startDate = parsedStart;
+    }
+
+    if (endDateStr) {
+        const parsedEnd = parseDateInput(endDateStr);
+        if (!parsedEnd) {
+            showAlert('تنسيق تاريخ النهاية غير صحيح. استخدم YYYY-MM-DD أو DD/MM/YYYY', 'error');
+            return;
+        }
+        searchParams.endDate = parsedEnd;
+    }
+
+    currentExpenseSearch = searchParams;
+    await loadExpenses();
+}
+
+async function clearExpenseSearch() {
+    document.getElementById('expenseSearchKeyword').value = '';
+    document.getElementById('expenseSearchStartDate').value = '';
+    document.getElementById('expenseSearchEndDate').value = '';
+    currentExpenseSearch = {};
+    document.getElementById('expenseResultsInfo')?.classList.remove('active');
+    await loadExpenses();
 }
 
 function groupExpensesByMonth(expenses) {

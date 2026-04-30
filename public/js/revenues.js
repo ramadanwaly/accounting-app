@@ -1,16 +1,22 @@
 // ===== إدارة الإيرادات =====
 
+let currentRevenueSearch = {};
+
 async function loadRevenues() {
     const container = document.getElementById('revenuesContent');
     container.innerHTML = '<p class="loading">جاري التحميل...</p>';
     try {
-        const response = await revenuesAPI.getAll();
+        const response = await revenuesAPI.getAll(currentRevenueSearch);
         const revenues = response.data;
+        const totalCount = response.pagination ? response.pagination.total : revenues.length;
+        updateSearchResultsInfo('revenueResultsInfo', totalCount, currentRevenueSearch.search);
+
         if (revenues.length === 0) {
             container.innerHTML = '<p style="text-align:center; padding:30px;">لا توجد إيرادات مسجلة</p>';
             return;
         }
         const monthlyGroups = groupRevenuesByMonth(revenues);
+        const searchTerm = currentRevenueSearch.search || '';
         container.innerHTML = Object.entries(monthlyGroups).sort((a, b) => new Date(b[1].date) - new Date(a[1].date)).map(([key, group]) => `
             <div class="project-card">
                 <div class="project-header" style="cursor: pointer;">
@@ -23,7 +29,7 @@ async function loadRevenues() {
                 <div class="project-details" style="display: none;">
                     <div class="table-container">
                         <table><thead><tr><th>التاريخ</th><th>المصدر</th><th>المبلغ</th><th>الملاحظات</th><th>الإجراءات</th></tr></thead>
-                            <tbody>${group.revenues.map(rev => `<tr><td>${formatDate(rev.date)}</td><td>${escapeHtml(rev.source)}</td><td>${formatCurrency(rev.amount)}</td><td>${escapeHtml(rev.notes || '-')}</td><td><button class="btn btn-icon edit-btn" data-id="${rev.id}" title="تعديل">✏️</button><button class="btn btn-icon btn-danger delete-btn" data-id="${rev.id}" title="حذف">🗑️</button></td></tr>`).join('')}</tbody>
+                            <tbody>${group.revenues.map(rev => `<tr><td>${formatDate(rev.date)}</td><td>${highlightText(rev.source, searchTerm)}</td><td>${formatCurrency(rev.amount)}</td><td>${highlightText(rev.notes || '-', searchTerm)}</td><td><button class="btn btn-icon edit-btn" data-id="${rev.id}" title="تعديل">✏️</button><button class="btn btn-icon btn-danger delete-btn" data-id="${rev.id}" title="حذف">🗑️</button></td></tr>`).join('')}</tbody>
                         </table>
                     </div>
                 </div>
@@ -33,6 +39,84 @@ async function loadRevenues() {
         container.innerHTML = '<p style="text-align:center; padding:30px; color:var(--danger-color);">خطأ في تحميل البيانات</p>';
         showAlert('فشل في تحميل الإيرادات', 'error');
     }
+}
+
+function updateSearchResultsInfo(elementId, count, searchTerm) {
+    const infoElement = document.getElementById(elementId);
+    if (!infoElement) return;
+
+    if (searchTerm && searchTerm.length >= 2) {
+        infoElement.innerHTML = `تم العثور على <span class="results-count">${count}</span> نتيجة للبحث عن "<strong>${escapeHtml(searchTerm)}</strong>"`;
+        infoElement.classList.add('active');
+    } else {
+        infoElement.classList.remove('active');
+    }
+}
+
+function setupRevenueSearch() {
+    const searchBtn = document.getElementById('revenueSearchBtn');
+    const clearBtn = document.getElementById('revenueClearBtn');
+    const keywordInput = document.getElementById('revenueSearchKeyword');
+    const startDateInput = document.getElementById('revenueSearchStartDate');
+    const endDateInput = document.getElementById('revenueSearchEndDate');
+
+    if (searchBtn) {
+        searchBtn.addEventListener('click', performRevenueSearch);
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearRevenueSearch);
+    }
+
+    if (keywordInput) {
+        keywordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performRevenueSearch();
+        });
+    }
+}
+
+async function performRevenueSearch() {
+    const keyword = document.getElementById('revenueSearchKeyword')?.value.trim() || '';
+    const startDateStr = document.getElementById('revenueSearchStartDate')?.value.trim() || '';
+    const endDateStr = document.getElementById('revenueSearchEndDate')?.value.trim() || '';
+
+    if (keyword && keyword.length < 2) {
+        showAlert('كلمة البحث يجب أن تكون حرفين على الأقل', 'error');
+        return;
+    }
+
+    const searchParams = {};
+    if (keyword) searchParams.search = keyword;
+
+    if (startDateStr) {
+        const parsedStart = parseDateInput(startDateStr);
+        if (!parsedStart) {
+            showAlert('تنسيق تاريخ البداية غير صحيح. استخدم YYYY-MM-DD أو DD/MM/YYYY', 'error');
+            return;
+        }
+        searchParams.startDate = parsedStart;
+    }
+
+    if (endDateStr) {
+        const parsedEnd = parseDateInput(endDateStr);
+        if (!parsedEnd) {
+            showAlert('تنسيق تاريخ النهاية غير صحيح. استخدم YYYY-MM-DD أو DD/MM/YYYY', 'error');
+            return;
+        }
+        searchParams.endDate = parsedEnd;
+    }
+
+    currentRevenueSearch = searchParams;
+    await loadRevenues();
+}
+
+async function clearRevenueSearch() {
+    document.getElementById('revenueSearchKeyword').value = '';
+    document.getElementById('revenueSearchStartDate').value = '';
+    document.getElementById('revenueSearchEndDate').value = '';
+    currentRevenueSearch = {};
+    document.getElementById('revenueResultsInfo')?.classList.remove('active');
+    await loadRevenues();
 }
 
 function groupRevenuesByMonth(revenues) {

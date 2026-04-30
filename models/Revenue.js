@@ -1,6 +1,7 @@
 const { run, get, query } = require('../config/database');
 const { roundMoney } = require('../utils/money');
 const { MAX_RECORDS_LIMIT } = require('../config/constants');
+const { normalizeArabic, getSqlNormalize } = require('../utils/arabic');
 
 class Revenue {
     // إضافة إيراد جديد
@@ -33,8 +34,10 @@ class Revenue {
             params.push(filters.endDate);
         }
         if (filters.search) {
-            where.push('(source LIKE ? OR notes LIKE ?)');
-            const searchTerm = `%${filters.search}%`;
+            const normalizedColumnSource = getSqlNormalize('source');
+            const normalizedColumnNotes = getSqlNormalize('notes');
+            where.push(`(${normalizedColumnSource} LIKE ? OR ${normalizedColumnNotes} LIKE ?)`);
+            const searchTerm = `%${normalizeArabic(filters.search)}%`;
             params.push(searchTerm, searchTerm);
         }
 

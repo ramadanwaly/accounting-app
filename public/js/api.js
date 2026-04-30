@@ -87,8 +87,13 @@ const authAPI = {
 
 // دوال API للإيرادات
 const revenuesAPI = {
-    async getAll() {
-        return await request('/revenues');
+    async getAll({ search, startDate, endDate } = {}) {
+        const params = new URLSearchParams();
+        if (search && search.length >= 2) params.append('search', search);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const queryString = params.toString();
+        return await request(`/revenues${queryString ? '?' + queryString : ''}`);
     },
 
     async getById(id) {
@@ -132,8 +137,13 @@ const revenuesAPI = {
 
 // دوال API للمصروفات
 const expensesAPI = {
-    async getAll() {
-        return await request('/expenses');
+    async getAll({ search, startDate, endDate } = {}) {
+        const params = new URLSearchParams();
+        if (search && search.length >= 2) params.append('search', search);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const queryString = params.toString();
+        return await request(`/expenses${queryString ? '?' + queryString : ''}`);
     },
 
     async getById(id) {

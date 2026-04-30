@@ -64,6 +64,10 @@ function setupEventListeners() {
     document.getElementById('deleteAllExpensesBtn')?.addEventListener('click', deleteAllExpenses);
     document.getElementById('addBulkExpenseBtn')?.addEventListener('click', showBulkExpenseModal);
 
+    // إعداد البحث
+    if (typeof setupRevenueSearch === 'function') setupRevenueSearch();
+    if (typeof setupExpenseSearch === 'function') setupExpenseSearch();
+
     // حساب الإجمالي تلقائياً
     const calculateTotal = () => {
         const qty = parseFloat(document.getElementById('expenseQuantity').value) || 0;

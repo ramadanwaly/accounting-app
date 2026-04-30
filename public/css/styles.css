@@ -1258,8 +1258,120 @@ canvas {
     .charts-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .chart-container-card {
         padding: 15px;
+    }
+}
+
+/* ===== تنسيقات واجهة البحث ===== */
+.search-container {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.search-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.search-field {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.search-field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.search-field input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-actions {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.btn-search, .btn-clear {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.search-results-info {
+    margin-top: 15px;
+    padding: 10px 15px;
+    background: var(--bg-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: none;
+}
+
+.search-results-info.active {
+    display: block;
+}
+
+.search-results-info .results-count {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* تمييز الكلمات المطابقة */
+mark.search-highlight {
+    background-color: #fff59d;
+    color: #333;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+[data-theme="dark"] mark.search-highlight {
+    background-color: #f57f17;
+    color: #fff;
+}
+
+/* تنسيقات متجاوبة للبحث */
+@media (max-width: 768px) {
+    .search-row {
+        flex-direction: column;
+    }
+
+    .search-field {
+        min-width: 100%;
+    }
+
+    .search-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .btn-search, .btn-clear {
+        flex: 1;
     }
 }

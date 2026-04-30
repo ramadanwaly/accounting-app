@@ -165,6 +165,28 @@
                         <button class="btn btn-primary" id="addRevenueBtn">+ إضافة إيراد</button>
                     </div>
                 </div>
+                <!-- واجهة البحث للإيرادات -->
+                <div class="search-container" id="revenuesSearch">
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label for="revenueSearchKeyword">كلمات البحث</label>
+                            <input type="text" id="revenueSearchKeyword" placeholder="ابحث في المصدر والملاحظات (حرفين على الأقل)" minlength="2">
+                        </div>
+                        <div class="search-field">
+                            <label for="revenueSearchStartDate">من تاريخ</label>
+                            <input type="text" id="revenueSearchStartDate" placeholder="YYYY-MM-DD أو DD/MM/YYYY">
+                        </div>
+                        <div class="search-field">
+                            <label for="revenueSearchEndDate">إلى تاريخ</label>
+                            <input type="text" id="revenueSearchEndDate" placeholder="YYYY-MM-DD أو DD/MM/YYYY">
+                        </div>
+                        <div class="search-actions">
+                            <button class="btn btn-primary btn-search" id="revenueSearchBtn">🔍 بحث</button>
+                            <button class="btn btn-secondary btn-clear" id="revenueClearBtn">مسح الفلاتر</button>
+                        </div>
+                    </div>
+                    <div class="search-results-info" id="revenueResultsInfo"></div>
+                </div>
                 <div id="revenuesContent">
                     <div class="table-card">
                         <div class="table-container">
@@ -198,6 +220,28 @@
                         <button class="btn btn-secondary" id="addBulkExpenseBtn">📋 إضافة متعددة</button>
                         <button class="btn btn-primary" id="addExpenseBtn">+ إضافة مصروف</button>
                     </div>
+                </div>
+                <!-- واجهة البحث للمصروفات -->
+                <div class="search-container" id="expensesSearch">
+                    <div class="search-row">
+                        <div class="search-field">
+                            <label for="expenseSearchKeyword">كلمات البحث</label>
+                            <input type="text" id="expenseSearchKeyword" placeholder="ابحث في النوع والملاحظات (حرفين على الأقل)" minlength="2">
+                        </div>
+                        <div class="search-field">
+                            <label for="expenseSearchStartDate">من تاريخ</label>
+                            <input type="text" id="expenseSearchStartDate" placeholder="YYYY-MM-DD أو DD/MM/YYYY">
+                        </div>
+                        <div class="search-field">
+                            <label for="expenseSearchEndDate">إلى تاريخ</label>
+                            <input type="text" id="expenseSearchEndDate" placeholder="YYYY-MM-DD أو DD/MM/YYYY">
+                        </div>
+                        <div class="search-actions">
+                            <button class="btn btn-primary btn-search" id="expenseSearchBtn">🔍 بحث</button>
+                            <button class="btn btn-secondary btn-clear" id="expenseClearBtn">مسح الفلاتر</button>
+                        </div>
+                    </div>
+                    <div class="search-results-info" id="expenseResultsInfo"></div>
                 </div>
                 <div id="expensesContent">
                     <div class="table-card">
