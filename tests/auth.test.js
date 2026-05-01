@@ -19,9 +19,9 @@ describe('Auth API', () => {
         await initDatabase();
     });
 
-    afterEach((done) => {
+    afterEach(() => {
         // تنظيف البيانات بعد كل اختبار
-        db.run('DELETE FROM users', done);
+        db.prepare('DELETE FROM users').run();
     });
 
     const testUser = {
