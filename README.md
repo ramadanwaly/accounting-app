@@ -69,7 +69,6 @@
 5.  **تشغيل التطبيق:**
     *   **كخادم ويب:** `npm start`
     *   **للمطورين (مع إعادة تشغيل تلقائي):** `npm run dev`
-    *   **كتطبيق سطح مكتب:** `npm run electron`
 
 ---
 
@@ -81,8 +80,6 @@
 | `npm run dev` | تشغيل وضع التطوير (Nodemon) |
 | `npm run init-db` | إنشاء وتهيئة قاعدة البيانات والجداول |
 | `npm run backup` | أخذ نسخة احتياطية فورية من البيانات |
-| `npm run electron` | فتح البرنامج كواجهة سطح مكتب |
-| `npm run build` | بناء ملفات التثبيت لسطح المكتب (Dist) |
 | `npm test` | تشغيل الاختبارات البرمجية (Jest) |
 | `npm run generate-secret` | توليد مفتاح JWT آمن وعشوائي |
 
@@ -110,7 +107,6 @@ docker-compose up -d
 ├── routes/             # مسارات الـ API (Endpoints)
 ├── scripts/            # سكربتات الصيانة والإدارة والنسخ الاحتياطي
 ├── tests/              # الاختبارات الآلية (Unit & Integration tests)
-└── electron-main.js    # نقطة الدخول لتطبيق سطح المكتب
 ```
 
 ---
