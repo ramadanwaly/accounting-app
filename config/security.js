@@ -3,6 +3,45 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 
+const normalizeOrigin = (value) => (value || '').trim().replace(/\/+$/, '');
+
+const buildAllowedOrigins = () => {
+    const configured = process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(',').map(normalizeOrigin).filter(Boolean)
+        : [];
+
+    if (configured.length > 0) {
+        return configured;
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+        return ['https://app.ramadanwaly.click'];
+    }
+
+    return ['http://localhost:3000', 'http://127.0.0.1:3000'];
+};
+
+const isOriginAllowed = (origin, allowedOrigins) => {
+    const normalizedOrigin = normalizeOrigin(origin);
+    return allowedOrigins.some((allowed) => {
+        if (allowed === '*') return true;
+        if (allowed === normalizedOrigin) return true;
+        if (allowed.startsWith('*.')) {
+            const suffix = allowed.slice(1); // ".example.com"
+            return normalizedOrigin.endsWith(suffix);
+        }
+        return false;
+    });
+};
+
+const isDeletionApprovalRoute = (req) => {
+    const path = req.path || '';
+    return (
+        path.startsWith('/api/requests/approve-deletion/') ||
+        path.startsWith('/api/requests/reject-deletion/')
+    );
+};
+
 const setupSecurity = (app) => {
     // Helmet: حماية الهيدرز
     app.use(helmet({
@@ -38,26 +77,31 @@ const setupSecurity = (app) => {
     }));
 
     // CORS: سياسة مشاركة الموارد (مقيد للأمان)
-    const allowedOrigins = process.env.CORS_ORIGIN
-        ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-        : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    const allowedOrigins = buildAllowedOrigins();
 
     if (process.env.NODE_ENV === 'production' && allowedOrigins.includes('*')) {
         throw new Error('CORS_ORIGIN cannot include "*" in production');
     }
 
-    app.use(cors({
-        origin: function (origin, callback) {
-            // السماح للطلبات بدون origin (مثل mobile apps أو curl)
-            if (!origin) return callback(null, true);
+    app.use(cors((req, callback) => {
+        // روابط الموافقة/الرفض القادمة من الإيميل قد تحمل Origin خارجي (mail clients/webmail).
+        // نسمح بها حتى يمكن فتح صفحة التأكيد.
+        if (isDeletionApprovalRoute(req)) {
+            return callback(null, { origin: true, credentials: true });
+        }
 
-            if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-                callback(null, true);
-            } else {
-                callback(new Error('غير مسموح بالوصول من هذا النطاق (CORS)'));
-            }
-        },
-        credentials: true
+        const requestOrigin = req.header('Origin');
+
+        // السماح للطلبات بدون origin (مثل mobile apps أو curl)
+        if (!requestOrigin) {
+            return callback(null, { origin: true, credentials: true });
+        }
+
+        if (isOriginAllowed(requestOrigin, allowedOrigins)) {
+            return callback(null, { origin: true, credentials: true });
+        }
+
+        return callback(new Error('غير مسموح بالوصول من هذا النطاق (CORS)'));
     }));
 
     // Rate Limiting: تحديد عدد الطلبات

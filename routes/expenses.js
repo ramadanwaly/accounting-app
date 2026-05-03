@@ -103,12 +103,8 @@ router.post('/', upload.any(), receiptFileValidator, expenseValidator, async (re
         const receiptFiles = getReceiptFiles(req);
         if (receiptFiles.length > 0) {
             for (const file of receiptFiles) {
-                try {
-                    const receiptData = await ReceiptService.saveReceipt(file);
-                    await Expense.addReceipt(expenseId, receiptData);
-                } catch (uploadError) {
-                    console.error('Error saving receipt:', uploadError.message);
-                }
+                const receiptData = await ReceiptService.saveReceipt(file);
+                await Expense.addReceipt(expenseId, receiptData);
             }
         }
 
@@ -264,12 +260,8 @@ router.put('/:id', upload.any(), receiptFileValidator, [...idValidator, ...expen
 
         // حفظ الإيصالات الجديدة إذا وجدت
         for (const file of newReceiptFiles) {
-            try {
-                const receiptData = await ReceiptService.saveReceipt(file);
-                await Expense.addReceipt(id, receiptData);
-            } catch (uploadError) {
-                console.error('Error saving receipt during update:', uploadError.message);
-            }
+            const receiptData = await ReceiptService.saveReceipt(file);
+            await Expense.addReceipt(id, receiptData);
         }
 
         res.json({

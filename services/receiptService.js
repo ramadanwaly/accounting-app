@@ -8,11 +8,21 @@ const THUMBNAIL_DIR = path.join(UPLOADS_DIR, 'thumbnails');
 
 class ReceiptService {
     /**
+     * التأكد من وجود مجلدات التخزين قبل أي عملية كتابة
+     */
+    static async ensureStorageDirs() {
+        await fs.mkdir(ORIGINAL_DIR, { recursive: true });
+        await fs.mkdir(THUMBNAIL_DIR, { recursive: true });
+    }
+
+    /**
      * يحفظ ملف الإيصال ويولد نسخة مصغرة له
      * @param {Object} file - كائن الملف من multer
      * @returns {Promise<Object>} - بيانات الملف المحفوظ
      */
     static async saveReceipt(file) {
+        await ReceiptService.ensureStorageDirs();
+
         // تحقق فعلي من محتوى الصورة (وليس الاعتماد على mimetype فقط)
         let metadata;
         try {
@@ -57,8 +67,8 @@ class ReceiptService {
 
         return {
             filename,
-            file_path: `/uploads/receipts/original/${filename}`,
-            thumbnail_path: `/uploads/receipts/thumbnails/${filename}`,
+            file_path: `/api/expenses/receipts/original/${filename}`,
+            thumbnail_path: `/api/expenses/receipts/thumbnails/${filename}`,
             original_name: file.originalname,
             mime_type: file.mimetype,
             size: file.size

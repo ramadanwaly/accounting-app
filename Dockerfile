@@ -25,8 +25,8 @@ RUN npm rebuild bcrypt sqlite3
 # Copy application files
 COPY . .
 
-# Create directories for database, logs, and backups
-RUN mkdir -p database logs backups
+# Create directories for database, logs, backups, and uploads
+RUN mkdir -p database logs backups uploads/receipts/original uploads/receipts/thumbnails
 
 # Set permissions
 RUN chown -R node:node /app
