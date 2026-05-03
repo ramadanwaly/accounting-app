@@ -131,6 +131,11 @@ function setupTableDelegation() {
     });
     // تفويض أحداث المصروفات
     document.getElementById('expensesContent')?.addEventListener('click', (e) => {
+        const thumb = e.target.closest('.receipt-thumb');
+        if (thumb) {
+            if (typeof showReceiptModal === 'function') showReceiptModal(thumb.dataset.path);
+            return;
+        }
         const btn = e.target.closest('.btn-icon');
         if (btn) {
             const id = parseInt(btn.dataset.id);

@@ -76,7 +76,7 @@ router.post('/users/reject', userIdValidator, async (req, res, next) => {
         }
 
         // منع حذف الأدمن لنفسه
-        if (userId === req.user.userId) {
+        if (Number(userId) === Number(req.user.userId)) {
             return res.status(400).json({
                 success: false,
                 message: 'لا يمكنك حذف حسابك الخاص'

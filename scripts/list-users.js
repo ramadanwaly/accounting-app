@@ -1,14 +1,11 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
 const dbPath = path.join(__dirname, '..', 'database', 'accounting.db');
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
-db.all(`SELECT id, email, full_name, role, is_approved, created_at FROM users ORDER BY created_at DESC`, [], (err, rows) => {
-    if (err) {
-        console.error('Error fetching users:', err.message);
-        process.exit(1);
-    }
+try {
+    const rows = db.prepare(`SELECT id, email, full_name, role, is_approved, created_at FROM users ORDER BY created_at DESC`).all();
 
     console.log('\n=== All Users ===\n');
     rows.forEach(user => {
@@ -20,6 +17,9 @@ db.all(`SELECT id, email, full_name, role, is_approved, created_at FROM users OR
         console.log(`Created: ${user.created_at}`);
         console.log('---');
     });
-
+} catch (err) {
+    console.error('Error fetching users:', err.message);
+    process.exit(1);
+} finally {
     db.close();
-});
+}

@@ -187,6 +187,39 @@ const idValidator = [
     handleValidationErrors
 ];
 
+// التحقق من ملفات الإيصالات
+const receiptFileValidator = (req, res, next) => {
+    // إذا لم يكن هناك ملفات، ننتقل للمرحلة التالية (الملف اختياري)
+    if (!req.file && (!req.files || (Array.isArray(req.files) && req.files.length === 0))) {
+        return next();
+    }
+
+    // تجميع الملفات في مصفوفة واحدة للتحقق منها
+    const files = req.file ? [req.file] : (Array.isArray(req.files) ? req.files : Object.values(req.files).flat());
+
+    for (const file of files) {
+        // التحقق من نوع الملف (JPG, PNG)
+        const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+        if (!allowedMimes.includes(file.mimetype)) {
+            return res.status(400).json({
+                success: false,
+                message: `نوع الملف ${file.originalname} غير مدعوم. يرجى رفع صور JPG أو PNG فقط.`
+            });
+        }
+
+        // التحقق من الحجم (الحد الأقصى 2 ميجابايت)
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            return res.status(400).json({
+                success: false,
+                message: `حجم الملف ${file.originalname} كبير جداً. الحد الأقصى المسموح به هو 2 ميجابايت.`
+            });
+        }
+    }
+
+    next();
+};
+
 module.exports = {
     loginValidator,
     registerValidator,
@@ -195,5 +228,6 @@ module.exports = {
     bulkExpenseValidator,
     bulkRevenueValidator,
     idValidator,
+    receiptFileValidator,
     handleValidationErrors
 };

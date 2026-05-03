@@ -1,4 +1,4 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
 const email = process.argv[2];
@@ -10,19 +10,18 @@ if (!email) {
 }
 
 const dbPath = path.join(__dirname, '..', 'database', 'accounting.db');
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
-db.run(`DELETE FROM users WHERE email = ?`, [email], function (err) {
-    if (err) {
-        console.error('Error deleting user:', err.message);
-        process.exit(1);
-    }
-
-    if (this.changes > 0) {
+try {
+    const result = db.prepare(`DELETE FROM users WHERE email = ?`).run(email);
+    if (result.changes > 0) {
         console.log(`Successfully deleted user: ${email}`);
     } else {
         console.log(`User not found: ${email}`);
     }
-
+} catch (err) {
+    console.error('Error deleting user:', err.message);
+    process.exit(1);
+} finally {
     db.close();
-});
+}

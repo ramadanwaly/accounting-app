@@ -46,7 +46,8 @@ const runMigrations = async () => {
     // 3. قائمة ملفات الهجرة
     const migrations = [
         require('../database/migrations/001_baseline_updates'),
-        require('../database/migrations/002_add_csrf_token')
+        require('../database/migrations/002_add_csrf_token'),
+        require('../database/migrations/003_add_expense_receipts')
     ];
 
     // 4. تنفيذ الهجرات الجديدة فقط
@@ -91,7 +92,7 @@ const initDatabase = () => {
 };
 
 // دالة للاستعلام مع Promise (تُرجع جميع الصفوف)
-const query = (sql, params = []) => {
+const all = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         try {
             const stmt = db.prepare(sql);
@@ -107,24 +108,20 @@ const query = (sql, params = []) => {
 const run = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         try {
-            // أوامر التحكم في المعاملات تحتاج db.exec() وليس db.prepare()
-            const trimmedSql = sql.trim().toUpperCase();
-            if (trimmedSql === 'BEGIN TRANSACTION' || trimmedSql === 'BEGIN' ||
-                trimmedSql === 'COMMIT' || trimmedSql === 'ROLLBACK') {
-                db.exec(sql);
-                resolve({ lastID: 0, changes: 0 });
-                return;
-            }
-
             const stmt = db.prepare(sql);
             const result = stmt.run(...params);
+            
+            // تحويل BigInt إلى Number لضمان التوافق مع JSON
+            const lastID = typeof result.lastInsertRowid === 'bigint' 
+                ? Number(result.lastInsertRowid) 
+                : result.lastInsertRowid;
+            
             resolve({
-                lastID: result.lastInsertRowid,
+                lastID,
                 changes: result.changes
             });
         } catch (err) {
             reject(err);
-
         }
     });
 };
@@ -140,6 +137,16 @@ const get = (sql, params = []) => {
             reject(err);
         }
     });
+};
+
+/**
+ * دالة لتنفيذ المعاملات (Transactions) بشكل آمن ومتزامن
+ * @param {Function} fn - الدالة التي تحتوي على العمليات المراد تنفيذها
+ * @returns {any} - نتيجة الدالة fn
+ */
+const transaction = (fn) => {
+    const runInTransaction = db.transaction(fn);
+    return runInTransaction();
 };
 
 // دالة لإغلاق قاعدة البيانات بشكل آمن
@@ -159,8 +166,10 @@ const closeDatabase = () => {
 module.exports = {
     db,
     initDatabase,
-    query,
+    query: all, // للمحافظة على التوافق مع الكود القديم
+    all,
     run,
     get,
+    transaction,
     closeDatabase
 };

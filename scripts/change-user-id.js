@@ -1,4 +1,4 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
 const oldId = process.argv[2];
@@ -11,76 +11,39 @@ if (!oldId || !newId) {
 }
 
 const dbPath = path.join(__dirname, '..', 'database', 'accounting.db');
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
-db.serialize(() => {
-    db.run('BEGIN TRANSACTION');
+try {
+    const existing = db.prepare('SELECT id FROM users WHERE id = ?').get(newId);
+    if (existing) {
+        console.error('خطأ: المعرف الجديد موجود بالفعل لمستخدم آخر.');
+        process.exit(1);
+    }
 
-    // 1. التفتيش عما إذا كان المعرف الجديد موجوداً بالفعل
-    db.get('SELECT id FROM users WHERE id = ?', [newId], (err, row) => {
-        if (row) {
-            console.error('خطأ: المعرف الجديد موجود بالفعل لمستخدم آخر.');
-            db.run('ROLLBACK');
-            db.close();
-            process.exit(1);
+    const tables = [
+        { name: 'revenues', col: 'user_id' },
+        { name: 'expenses', col: 'user_id' },
+        { name: 'verification_codes', col: 'user_id' },
+        { name: 'deletion_requests', col: 'user_id' },
+        { name: 'audit_logs', col: 'user_id' }
+    ];
+
+    db.transaction(() => {
+        const result = db.prepare('UPDATE users SET id = ? WHERE id = ?').run(newId, oldId);
+        if (result.changes === 0) {
+            throw new Error('المستخدم غير موجود.');
         }
 
-        // 2. تحديث جدول المستخدمين (نحتاج لتعطيل قيود المفاتيح الأجنبية مؤقتاً أو التحديث في ترتيب معين)
-        // في SQLite، تغيير الـ PRIMARY KEY مباشرة قد يكون صعباً، الأفضل هو تفعيل ON UPDATE CASCADE إن أمكن، 
-        // ولكن بما أن الجداول منشأة بالفعل بدونه، سنقوم بالتحديث يدوياً.
-
-        const tables = [
-            { name: 'revenues', col: 'user_id' },
-            { name: 'expenses', col: 'user_id' },
-            { name: 'verification_codes', col: 'user_id' },
-            { name: 'deletion_requests', col: 'user_id' },
-            { name: 'audit_logs', col: 'user_id' }
-        ];
-
-        let completed = 0;
-
-        const checkCompletion = () => {
-            completed++;
-            if (completed === tables.length + 1) {
-                db.run('COMMIT', (err) => {
-                    if (err) {
-                        console.error('خطأ في حفظ التغييرات:', err.message);
-                    } else {
-                        console.log(`تم تغيير المعرف من ${oldId} إلى ${newId} بنجاح.`);
-                    }
-                    db.close();
-                });
-            }
-        };
-
-        // تحديث جدول المستخدمين أولاً
-        db.run('UPDATE users SET id = ? WHERE id = ?', [newId, oldId], function(err) {
-            if (err) {
-                console.error('خطأ في تحديث جدول المستخدمين:', err.message);
-                db.run('ROLLBACK');
-                db.close();
-                process.exit(1);
-            }
-            if (this.changes === 0) {
-                console.error('المستخدم غير موجود.');
-                db.run('ROLLBACK');
-                db.close();
-                process.exit(1);
-            }
-            checkCompletion();
-        });
-
-        // تحديث الجداول المرتبطة
         tables.forEach(table => {
-            db.run(`UPDATE ${table.name} SET ${table.col} = ? WHERE ${table.col} = ?`, [newId, oldId], (err) => {
-                if (err) {
-                    console.error(`خطأ في تحديث جدول ${table.name}:`, err.message);
-                    db.run('ROLLBACK');
-                    db.close();
-                    process.exit(1);
-                }
-                checkCompletion();
-            });
+            db.prepare(`UPDATE ${table.name} SET ${table.col} = ? WHERE ${table.col} = ?`).run(newId, oldId);
         });
-    });
-});
+    })();
+
+    console.log(`تم تغيير المعرف من ${oldId} إلى ${newId} بنجاح.`);
+
+} catch (err) {
+    console.error('خطأ:', err.message);
+    process.exit(1);
+} finally {
+    db.close();
+}

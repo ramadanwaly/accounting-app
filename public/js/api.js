@@ -4,9 +4,10 @@ const API_BASE_URL = '/api';
 // دوال مساعدة للطلبات
 async function request(endpoint, options = {}) {
     const token = localStorage.getItem('authToken');
+    const isFormData = options.body instanceof FormData;
 
     const defaultHeaders = {
-        'Content-Type': 'application/json',
+        ...(!isFormData && { 'Content-Type': 'application/json' }),
         ...(token && { 'Authorization': `Bearer ${token}` })
     };
 
@@ -155,23 +156,32 @@ const expensesAPI = {
     },
 
     async create(data) {
+        const isFormData = data instanceof FormData;
         return await request('/expenses', {
             method: 'POST',
-            body: JSON.stringify(data)
+            body: isFormData ? data : JSON.stringify(data)
         });
     },
 
     async createBulk(items) {
+        const isFormData = items instanceof FormData;
         return await request('/expenses/bulk', {
             method: 'POST',
-            body: JSON.stringify({ items })
+            body: isFormData ? items : JSON.stringify({ items })
         });
     },
 
     async update(id, data) {
+        const isFormData = data instanceof FormData;
         return await request(`/expenses/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(data)
+            body: isFormData ? data : JSON.stringify(data)
+        });
+    },
+
+    async deleteReceipt(expenseId, receiptId) {
+        return await request(`/expenses/${expenseId}/receipts/${receiptId}`, {
+            method: 'DELETE'
         });
     },
 

@@ -18,6 +18,21 @@ const errorHandler = (err, req, res, next) => {
         });
     }
 
+    // أخطاء رفع الملفات (multer)
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+            success: false,
+            message: 'حجم الملف كبير جداً. الحد الأقصى المسموح به هو 2 ميجابايت.'
+        });
+    }
+
+    if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+            success: false,
+            message: 'عدد الملفات المرفوعة كبير جداً. الحد الأقصى 10 ملفات.'
+        });
+    }
+
     // أخطاء JWT
     if (err.name === 'JsonWebTokenError') {
         return res.status(401).json({

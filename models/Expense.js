@@ -102,6 +102,18 @@ class Expense {
 
     // حذف مصروف
     static async delete(id, userId) {
+        const expense = await Expense.findById(id, userId);
+        if (!expense) return false;
+
+        const ReceiptService = require('../services/receiptService');
+        const receipts = await Expense.getReceipts(id);
+        for (const rec of receipts) {
+            if (rec.file_path) {
+                const filename = rec.file_path.split('/').pop();
+                await ReceiptService.deleteReceipt(filename);
+            }
+        }
+
         const result = await run(
             'DELETE FROM expenses WHERE id = ? AND user_id = ?',
             [id, userId]
@@ -111,6 +123,19 @@ class Expense {
 
     // حذف جميع المصروفات للمستخدم
     static async deleteAll(userId) {
+        const ReceiptService = require('../services/receiptService');
+        const expenses = await query('SELECT id FROM expenses WHERE user_id = ?', [userId]);
+        
+        for (const exp of expenses) {
+            const receipts = await Expense.getReceipts(exp.id);
+            for (const rec of receipts) {
+                if (rec.file_path) {
+                    const filename = rec.file_path.split('/').pop();
+                    await ReceiptService.deleteReceipt(filename);
+                }
+            }
+        }
+
         const result = await run(
             'DELETE FROM expenses WHERE user_id = ?',
             [userId]
@@ -191,6 +216,63 @@ class Expense {
              ORDER BY total DESC`,
             filters.params
         );
+    }
+
+    // --- طرق التعامل مع الإيصالات ---
+
+    /**
+     * يضيف إيصالاً جديداً لمصروف
+     */
+    static async addReceipt(expenseId, receiptData) {
+        const { file_path, thumbnail_path, original_name, mime_type, size } = receiptData;
+        const result = await run(
+            `INSERT INTO expense_receipts (expense_id, file_path, thumbnail_path, original_name, mime_type, size) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [expenseId, file_path, thumbnail_path, original_name, mime_type, size]
+        );
+        return result.lastID;
+    }
+
+    /**
+     * يحصل على جميع الإيصالات المرتبطة بمصروف معين
+     */
+    static async getReceipts(expenseId) {
+        return await query(
+            'SELECT * FROM expense_receipts WHERE expense_id = ? ORDER BY created_at ASC',
+            [expenseId]
+        );
+    }
+
+    /**
+     * يحذف إيصالاً معيناً من قاعدة البيانات
+     */
+    static async deleteReceipt(receiptId, expenseId) {
+        const result = await run(
+            'DELETE FROM expense_receipts WHERE id = ? AND expense_id = ?',
+            [receiptId, expenseId]
+        );
+        return result.changes > 0;
+    }
+
+    /**
+     * يحصل على بيانات إيصال معين
+     */
+    static async getReceiptById(receiptId) {
+        return await get(
+            'SELECT * FROM expense_receipts WHERE id = ?',
+            [receiptId]
+        );
+    }
+
+    /**
+     * يحذف جميع الإيصالات المرتبطة بمصروف
+     */
+    static async deleteAllReceipts(expenseId) {
+        const result = await run(
+            'DELETE FROM expense_receipts WHERE expense_id = ?',
+            [expenseId]
+        );
+        return result.changes > 0;
     }
 }
 

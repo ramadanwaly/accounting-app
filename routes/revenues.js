@@ -67,25 +67,27 @@ router.post('/', revenueValidator, async (req, res, next) => {
 
 // إضافة إيرادات متعددة (ملفوفة في Transaction لضمان الذرية)
 router.post('/bulk', bulkRevenueValidator, async (req, res, next) => {
-    const { run: dbRun } = require('../config/database');
+    const { transaction: dbTransaction, db } = require('../config/database');
+    const { roundMoney } = require('../utils/money');
     try {
         const userId = req.user.userId;
         const { items } = req.body;
 
-        await dbRun('BEGIN TRANSACTION');
-        const createdIds = [];
-        try {
+        const createdIds = dbTransaction(() => {
+            const ids = [];
+            const stmt = db.prepare(
+                'INSERT INTO revenues (user_id, date, source, amount, notes) VALUES (?, ?, ?, ?, ?)'
+            );
+            
             for (const item of items) {
-                const id = await Revenue.create(
-                    userId, item.date, item.source, item.amount, item.notes || null
+                const result = stmt.run(
+                    userId, item.date, item.source, roundMoney(item.amount), item.notes || null
                 );
-                createdIds.push(id);
+                const id = typeof result.lastInsertRowid === 'bigint' ? Number(result.lastInsertRowid) : result.lastInsertRowid;
+                ids.push(id);
             }
-            await dbRun('COMMIT');
-        } catch (insertError) {
-            await dbRun('ROLLBACK');
-            throw insertError;
-        }
+            return ids;
+        });
 
         await audit(req, 'revenue.bulk_create', {
             entityType: 'revenue',

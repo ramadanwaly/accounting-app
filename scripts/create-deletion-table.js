@@ -1,8 +1,8 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
 const dbPath = path.join(__dirname, '..', 'database', 'accounting.db');
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
 const createTableSQL = `
 CREATE TABLE IF NOT EXISTS deletion_requests (
@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS deletion_requests (
 CREATE INDEX IF NOT EXISTS idx_deletion_requests_token ON deletion_requests(admin_token);
 `;
 
-db.exec(createTableSQL, (err) => {
-    if (err) {
-        console.error('Error creating deletion_requests table:', err.message);
-    } else {
-        console.log('✅ deletion_requests table created successfully.');
-    }
+try {
+    db.exec(createTableSQL);
+    console.log('✅ deletion_requests table created successfully.');
+} catch (err) {
+    console.error('Error creating deletion_requests table:', err.message);
+} finally {
     db.close();
-});
+}

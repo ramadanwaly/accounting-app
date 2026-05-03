@@ -42,6 +42,10 @@ const setupSecurity = (app) => {
         ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
         : ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
+    if (process.env.NODE_ENV === 'production' && allowedOrigins.includes('*')) {
+        throw new Error('CORS_ORIGIN cannot include "*" in production');
+    }
+
     app.use(cors({
         origin: function (origin, callback) {
             // السماح للطلبات بدون origin (مثل mobile apps أو curl)

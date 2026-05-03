@@ -1,40 +1,22 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
 const dbPath = path.join(__dirname, '..', 'database', 'accounting.db');
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
-function run(sql, params = []) {
-    return new Promise((resolve, reject) => {
-        db.run(sql, params, function (err) {
-            if (err) reject(err);
-            else resolve(this);
-        });
-    });
-}
-
-function all(sql, params = []) {
-    return new Promise((resolve, reject) => {
-        db.all(sql, params, (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
-    });
-}
-
-async function migrate() {
+function migrate() {
     console.log('🔧 Starting database migration (v2)...');
 
     try {
-        const columns = await all("PRAGMA table_info(expenses)");
+        const columns = db.pragma("table_info(expenses)");
         const columnNames = columns.map(c => c.name);
 
         console.log('Current columns:', columnNames);
 
         if (!columnNames.includes('quantity')) {
             console.log('Adding "quantity" column...');
-            await run("ALTER TABLE expenses ADD COLUMN quantity REAL DEFAULT 1");
+            db.prepare("ALTER TABLE expenses ADD COLUMN quantity REAL DEFAULT 1").run();
             console.log('✅ Added "quantity" column.');
         } else {
             console.log('✅ "quantity" column already exists.');
@@ -42,11 +24,11 @@ async function migrate() {
 
         if (!columnNames.includes('price')) {
             console.log('Adding "price" column...');
-            await run("ALTER TABLE expenses ADD COLUMN price REAL DEFAULT 0");
+            db.prepare("ALTER TABLE expenses ADD COLUMN price REAL DEFAULT 0").run();
             console.log('✅ Added "price" column.');
 
             console.log('Updating existing prices...');
-            await run("UPDATE expenses SET price = amount");
+            db.prepare("UPDATE expenses SET price = amount").run();
             console.log('✅ Updated "price" for existing records.');
         } else {
             console.log('✅ "price" column already exists.');
@@ -57,11 +39,9 @@ async function migrate() {
     } catch (error) {
         console.error('❌ Migration failed:', error);
         process.exit(1);
+    } finally {
+        db.close();
     }
 }
 
-migrate()
-    .then(() => {
-        db.close();
-        process.exit(0);
-    });
+migrate();

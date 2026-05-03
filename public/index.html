@@ -456,7 +456,7 @@
                 <p style="margin-bottom: 15px;">هذا الإجراء يتطلب التحقق. انقر أدناه لإرسال رمز التحقق إلى بريدك
                     الإلكتروني.</p>
                 <div class="form-group" id="genericVerificationCodeGroup" style="display: none;">
-                    <label>كود التحقق</label>
+                    <label for="genericVerificationCode">كود التحقق</label>
                     <input type="text" id="genericVerificationCode" placeholder="أدخل الكود المكون من 6 أرقام">
                 </div>
                 <div class="modal-actions">
@@ -556,6 +556,18 @@
                     <label for="expenseNotes">ملاحظات</label>
                     <textarea id="expenseNotes" rows="3" placeholder="ملاحظات إضافية..."></textarea>
                 </div>
+                <div class="form-group" id="existingReceiptsContainer" style="display: none;">
+                    <div style="display: block; margin-bottom: 8px; font-weight: 500; color: #2c3e50;">الإيصالات الحالية</div>
+                    <div id="existingReceiptsList" class="receipts-preview-list"></div>
+                    <div class="form-check" style="margin-top: 10px;">
+                        <input type="checkbox" id="keepExistingReceipts" checked>
+                        <label for="keepExistingReceipts" style="display: inline; font-weight: normal; font-size: 0.9em;">الاحتفاظ بالإيصالات الحالية عند رفع صور جديدة</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="expenseReceipt">صور الإيصالات الجديدة (اختياري - حتى 5 صور)</label>
+                    <input type="file" id="expenseReceipt" accept="image/jpeg,image/png" multiple>
+                </div>
                 <div class="modal-actions">
                     <button type="submit" class="btn btn-primary">حفظ</button>
                     <button type="button" class="btn btn-secondary modal-cancel"
@@ -635,6 +647,7 @@
                                 <th>السعر</th>
                                 <th>الإجمالي</th>
                                 <th>ملاحظات</th>
+                                <th>الإيصال</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -699,6 +712,22 @@
                         data-modal="createUserModal">إلغاء</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: عرض الإيصال -->
+    <div class="modal" id="receiptModal">
+        <div class="modal-content" style="max-width: 90vw;">
+            <div class="modal-header">
+                <h3>🖼️ عرض الإيصال</h3>
+                <button class="modal-close" data-modal="receiptModal">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 20px;">
+                <img id="fullReceiptImage" src="" alt="إيصال" style="max-width: 100%; max-height: 75vh; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <div style="margin-top: 15px;">
+                    <a id="downloadReceiptBtn" href="" download class="btn btn-secondary">⬇️ تحميل الصورة</a>
+                </div>
+            </div>
         </div>
     </div>
 

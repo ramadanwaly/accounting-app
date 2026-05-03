@@ -1375,3 +1375,110 @@ mark.search-highlight {
         flex: 1;
     }
 }
+
+/* ===== أنماط إيصالات المصروفات ===== */
+.receipt-thumb {
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+}
+
+.receipt-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+    z-index: 10;
+}
+
+#fullReceiptImage {
+    max-height: 75vh;
+    cursor: default;
+    background-color: #f9f9f9;
+}
+
+[data-theme="dark"] #fullReceiptImage {
+    background-color: #1a202c;
+}
+
+.bulk-row input[type="file"] {
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 100%;
+}
+
+/* Receipt Preview in Modal */
+.receipts-preview-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--bg-color);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border-color);
+}
+
+.receipt-preview-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.receipt-preview-item:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+.receipt-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.btn-delete-receipt {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: var(--transition);
+    z-index: 2;
+}
+
+.receipt-preview-item:hover .btn-delete-receipt {
+    opacity: 1;
+}
+
+.btn-delete-receipt:hover {
+    background: var(--danger-color);
+    transform: scale(1.1);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.form-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}

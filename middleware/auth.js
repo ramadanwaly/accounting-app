@@ -4,7 +4,9 @@ const { jwtSecret } = require('../config/auth');
 // التحقق من JWT Token
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const bearerToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const queryToken = req.query && typeof req.query.token === 'string' ? req.query.token : null;
+    const token = bearerToken || queryToken;
 
     if (!token) {
         return res.status(401).json({
